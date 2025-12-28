@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+msal
+requests
+beautifulsoup4
+numpy
+python-dotenv
+langchain_google_genai
+langchain-core
