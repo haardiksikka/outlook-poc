@@ -7,15 +7,6 @@ from urllib.parse import quote
 
 
 def _parse_email_from_graph(msg_data: dict) -> Optional[Email]:
-    """
-    Parse Microsoft Graph email response to Email model.
-    
-    Args:
-        msg_data: Raw email data from Microsoft Graph API
-    
-    Returns:
-        Email model instance, or None if required fields are missing
-    """
     try:
         # Extract sender information
         sender_data = msg_data.get("from", {}).get("emailAddress", {})
@@ -56,26 +47,6 @@ def fetch_client_emails(
     client_email: str,
     months: int = 3
 ) -> List[Email]:
-    """
-    Fetch emails from Microsoft Graph API filtered by client and date range.
-    
-    Args:
-        access_token: Bearer token for authentication
-        user_email: User's email address (for logging)
-        client_email: Client email to filter conversations
-        months: Number of months to look back (default: 3)
-    
-    Returns:
-        List of Email objects from the past N months involving the client
-    
-    Raises:
-        requests.exceptions.HTTPError: If API request fails
-    
-    Note:
-        Uses simple $search with client email, then filters by date in Python.
-        Microsoft Graph $search endpoint has limited KQL support on /me/messages,
-        so we do: Search API -> fetch all matching -> Python filter by date.
-    """
     # Calculate cutoff date (make it timezone-aware in UTC)
     cutoff_date = datetime.now(timezone.utc) - timedelta(days=30 * months)
     cutoff_date_str = cutoff_date.strftime("%Y-%m-%d")
@@ -110,7 +81,6 @@ def fetch_client_emails(
         
         # Debug: Print error if not successful
         if resp.status_code != 200:
-            print(f"❌ Error {resp.status_code}: {resp.text}")
             resp.raise_for_status()
         
         data = resp.json()
@@ -131,10 +101,7 @@ def fetch_client_emails(
         next_url = data.get("@odata.nextLink")
         if next_url:
             url = next_url
-            print(f"  Fetched {batch_size} messages, fetching next page...")
         else:
             url = None
 
-    print(f"\n✅ Successfully fetched {total_fetched} total messages")
-    print(f"✅ Filtered to {emails_in_range} emails within {months} months\n")
     return emails
