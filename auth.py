@@ -1,5 +1,7 @@
 import msal
-from config import CLIENT_ID, CLIENT_SECRET, AUTHORITY, SCOPES
+from config import CLIENT_ID, CLIENT_SECRET, AUTHORITY, SCOPES, WEBHOOK_SECRET
+
+SCOPE = ["https://graph.microsoft.com/.default"]
 
 def get_token(auth_code: str, redirect_uri: str):
     app = msal.ConfidentialClientApplication(
@@ -83,3 +85,17 @@ def get_token_device_flow2():
 #         url = data.get("@odata.nextLink")
 
 #     return False
+
+def get_app_token():
+    app = msal.ConfidentialClientApplication(
+        CLIENT_ID,
+        authority=AUTHORITY,
+        client_credential=WEBHOOK_SECRET
+    )
+
+    result = app.acquire_token_for_client(scopes=SCOPE)
+
+    if "access_token" not in result:
+        raise Exception(result)
+
+    return result["access_token"]
